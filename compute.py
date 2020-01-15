@@ -12,6 +12,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+inductance = 2.15e-5
+
+
 def read_data_from_file(file_name):
     """Read data from file.
 
@@ -43,7 +46,7 @@ def read_data_from_file(file_name):
                     except IndexError:
                         print("wtf")
 
-        return _frequency, _capacity_1, _capacity_2
+        return np.asarray(_frequency), np.asarray(_capacity_1), np.asarray(_capacity_2), np.asarray(connection_type)
 
 
 def add_inverse(a, b):
@@ -59,7 +62,10 @@ def add_inverse(a, b):
     out: float
         the inverse of the sum of their inverses
     """
-    return (a**(-1) + b**(-1))**(-1)
+    if a and b:
+        return (a**(-1) + b**(-1))**(-1)
+    else:
+        return 0
 
 
 def eigen_frequency(circuit_capacity, cable_capacity=0):
@@ -67,9 +73,9 @@ def eigen_frequency(circuit_capacity, cable_capacity=0):
 
     Parameters
     ----------
-    circuit_capacity: float
+    circuit_capacity: float, ndarray
         Capacity of the elements in the circuit.
-    cable_capacity: float
+    cable_capacity: float, ndarray
         Cable capacity.
 
     Returns
@@ -77,16 +83,14 @@ def eigen_frequency(circuit_capacity, cable_capacity=0):
     out: float
         Eigenfrequency of the circuit taking into account the cable capacity.
     """
-    if circuit_capacity == 0:
-        return 0
+    # if circuit_capacity == 0:
+    #     return 0
 
-    inductance = 2.15e-5
-
-    return 1 / (2 * np.pi * np.sqrt(inductance * (circuit_capacity + cable_capacity)))
+    return 1 / (2 * np.pi * np.sqrt(inductance * np.asarray(circuit_capacity + cable_capacity)))
 
 
-def parallel_capacity_calculation(inductance, _capacity, ef):
-    return (2*np.pi*ef) ** -2 / inductance - _capacity
+def parasitic_capacity_calculation(capacity, efective_frequency):
+    return (2 * np.pi * efective_frequency) ** -2 / inductance - capacity
 
 
 def index_to_c1(c1):
@@ -125,11 +129,11 @@ def index_to_c3(c3):
     return cap_tot
 
 
-def capacity(c1, c2, c3=0, serial=0):
+def compute_capacity(c1, c2, c3=0, serial=0):
     if serial == 0:
-        cbox1 = index_to_c1(c1) + index_to_c2(c2)
+        cbox1 = index_to_c1(int(c1)) + index_to_c2(int(c2))
     elif serial == 1:
-        cbox1 = add_inverse(index_to_c1(c1), index_to_c2(c2))
+        cbox1 = add_inverse(index_to_c1(int(c1)), index_to_c2(int(c2)))
     else:
         cbox1 = None
 
@@ -143,13 +147,31 @@ def capacity(c1, c2, c3=0, serial=0):
         return add_inverse(cbox1 * 1e-9, cbox2 * 1e-9)
 
 
-def plot(frequency, c_par, c_ser):
+def plot_capacity(frequency, c_par):
+    plt.plot(frequency, c_par, '*')
+
+    plt.xlabel('Frequency [au]')
+    plt.ylabel('Capacity [mF]')
+
+    plt.show()
+
+
+def plot_capacities(frequency, c_par, c_ser):
     plt.plot(frequency, c_par)
     plt.plot(frequency, c_ser)
 
     plt.legend(['Parallel calculation', 'Serial calculation'])
-    plt.xlabel('Frequency [a.u]')
+    plt.xlabel('Frequency [au]')
     plt.ylabel('Capacity [mF]')
+
+    plt.show()
+
+
+def plot_frequencies(measured_frequency, theoretical_frequency):
+    plt.plot(measured_frequency, theoretical_frequency, '*')
+
+    plt.xlabel('Measured frequency [au]')
+    plt.ylabel('Theoretical frequency [au]')
 
     plt.show()
 
@@ -158,31 +180,25 @@ def main():
 
     # liste = list(it.product(range(64), range(32), range(16)))
 
-    frequency, capacity_1, capacity_2 = read_data_from_file('data.csv')
+    measured_frequency, capacity_1, capacity_2, connection_type = read_data_from_file('data/data.csv')
 
-    c_par = add_inverse(np.asarray(capacity_1), np.asarray(capacity_2))
-    c_ser = np.asarray(capacity_1) + np.asarray(capacity_2)
+    # c_par = add_inverse(np.asarray(capacity_1), np.asarray(capacity_2))
+    # c_ser = np.asarray(capacity_1) + np.asarray(capacity_2)
+    # plot_capacities(measured_frequency, c_par, c_ser)
 
-    plot(frequency, c_par, c_ser)
+    capacity_values = []
+    for i in range(len(capacity_1)):
+        capacity_values.append(compute_capacity(capacity_1[i], capacity_2[i], 0, connection_type[i]))
 
-    # Legacy: '20 Jan 15
-    # C0_list = []
-    # C0_list = parCcalc(2.15e-5, line[1]*1e-9, line[0]))
+    plot_capacity(measured_frequency, capacity_values)
 
-    # C0_list = np.array(C0_list)
-    #
-    # plt.plot(freqtable1[:,0], C0_list/freqtable1[:,1])
-    # cap_vs_ef = []
-    # caps = []
-    #
-    # for el in liste:
-    #    caps.append([el[0], el[1],el[2],capacity(el[0], el[1], el[2])])
-    #
-    # for cap in caps:
-    #    cap_vs_ef.append([cap, efreq(cap[1])])
-    #
-    # cap_vs_ef = np.array(cap_vs_ef)
-    # np.savetxt("table_caps", caps)
+    zeros = np.zeros(len(capacity_1))
+    theoretical_frequency = eigen_frequency(np.asarray(capacity_values), zeros)
+
+    plot_frequencies(measured_frequency, theoretical_frequency)
+
+    result = parasitic_capacity_calculation(capacity_values, measured_frequency)
+    plot_capacity(measured_frequency, result)
 
 
 if __name__ == '__main__':
