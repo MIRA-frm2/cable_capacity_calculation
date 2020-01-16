@@ -89,8 +89,12 @@ def eigen_frequency(circuit_capacity, cable_capacity=0):
     return 1 / (2 * np.pi * np.sqrt(inductance * np.asarray(circuit_capacity + cable_capacity)))
 
 
-def parasitic_capacity_calculation(capacity, efective_frequency):
-    return (2 * np.pi * efective_frequency) ** -2 / inductance - capacity
+def parasitic_capacity_calculation(capacity, efective_frequency, connection_type='serial'):
+    capacity_theo = (2 * np.pi * efective_frequency) ** -2 / inductance
+    if connection_type == 'serial':
+        return  capacity_theo - capacity
+    else:
+        return capacity_theo * capacity / (capacity - capacity_theo)
 
 
 def index_to_c1(c1):
@@ -190,14 +194,14 @@ def main():
     for i in range(len(capacity_1)):
         capacity_values.append(compute_capacity(capacity_1[i], capacity_2[i], 0, connection_type[i]))
 
-    plot_capacity(measured_frequency, capacity_values)
+    # plot_capacity(measured_frequency, capacity_values)
+    #
+    # zeros = np.zeros(len(capacity_1))
+    # theoretical_frequency = eigen_frequency(np.asarray(capacity_values), zeros)
 
-    zeros = np.zeros(len(capacity_1))
-    theoretical_frequency = eigen_frequency(np.asarray(capacity_values), zeros)
+    # plot_frequencies(measured_frequency, theoretical_frequency)
 
-    plot_frequencies(measured_frequency, theoretical_frequency)
-
-    result = parasitic_capacity_calculation(capacity_values, measured_frequency)
+    result = parasitic_capacity_calculation(capacity_values, measured_frequency, connection_type='parallel')
     plot_capacity(measured_frequency, result)
 
 
