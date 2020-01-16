@@ -10,7 +10,7 @@ import csv
 import numpy as np
 # import itertools as it
 import matplotlib.pyplot as plt
-
+from scipy import optimize
 
 inductance = 2.15e-5
 
@@ -42,7 +42,7 @@ def read_data_from_file(file_name):
                         _capacity_1.append(float(row[1]))
                         _capacity_2.append(float(row[2]))
 
-                        connection_type.append(bool(row[3]))
+                        connection_type.append(int(row[3]))
                     except IndexError:
                         print("wtf")
 
@@ -68,36 +68,87 @@ def add_inverse(a, b):
         return 0
 
 
-def eigen_frequency(circuit_capacity, cable_capacity=0):
+def compute_eigen_frequency(circuit_capacity, a=1, n=1 / 2, b=0, d=0):
     """Compute the eigenfrequency.
 
     Parameters
     ----------
     circuit_capacity: float, ndarray
         Capacity of the elements in the circuit.
-    cable_capacity: float, ndarray
-        Cable capacity.
+    a: float
+        Prefactor/Amplitude.
+    n: float
+        Power law dependence.
+    b: float
+        X axis off set.
+    d: float
+        Y axis off set.
 
     Returns
     -------
     out: float
         Eigenfrequency of the circuit taking into account the cable capacity.
     """
-    # if circuit_capacity == 0:
-    #     return 0
-
-    return 1 / (2 * np.pi * np.sqrt(inductance * np.asarray(circuit_capacity + cable_capacity)))
+    prefactor = 1 / (2 * np.pi * np.sqrt(inductance))
+    return prefactor * a * (np.asarray(circuit_capacity + b) ** (-n)) + d
 
 
-def parasitic_capacity_calculation(capacity, efective_frequency, connection_type='serial'):
-    capacity_theo = (2 * np.pi * efective_frequency) ** -2 / inductance
+def compute_capacity_for_given_eigenfrequency(eigenfrequency, params):
+    """
+
+    Parameters
+    ----------
+    eigenfrequency: float
+        Frequency to be have the capacity computed at.
+    params: tuple
+        Tuple of parameters used for the eigenfrequency computation.
+
+    Returns
+    -------
+    capacity: float
+        Computed capacity needed for the given eigenfrequency.
+    """
+    a, n, b, d = params
+    capacity = ((eigenfrequency - d) * (2 * np.pi * np.sqrt(inductance)) / a) ** n - b
+    return capacity
+
+
+def parasitic_capacity_calculation(capacity, effective_frequency, connection_type='serial'):
+    """Compute the parasitic capacity assuming that it contributes either as a serial or parallel connection.
+
+    Parameters
+    ----------
+    capacity: float
+        Measured capacity.
+    effective_frequency: float
+        Measured effective frequency.
+    connection_type: str, optional
+        Either 'serial' or 'parallel'.
+        Defaults to 'serial'.
+
+    Returns
+    -------
+    out: float
+        Parasitic capacity.
+    """
+    capacity_theo = (2 * np.pi * effective_frequency) ** -2 / inductance
     if connection_type == 'serial':
-        return  capacity_theo - capacity
+        return capacity_theo - capacity
     else:
         return capacity_theo * capacity / (capacity - capacity_theo)
 
 
 def index_to_c1(c1):
+    """
+
+    Parameters
+    ----------
+    c1
+
+    Returns
+    -------
+
+    """
     circ = bin(c1)[2:]
     cap_list = [20, 44, 94, 200, 440, 940]
     cap_tot = 0
@@ -110,6 +161,16 @@ def index_to_c1(c1):
 
 
 def index_to_c2(c2):
+    """
+
+    Parameters
+    ----------
+    c2
+
+    Returns
+    -------
+
+    """
     circ = bin(c2)[2:]
     cap_list = [0.44, 0.94, 2, 4.4, 9.40]
     cap_tot = 0
@@ -122,6 +183,16 @@ def index_to_c2(c2):
 
 
 def index_to_c3(c3):
+    """
+
+    Parameters
+    ----------
+    c3
+
+    Returns
+    -------
+
+    """
     circ = bin(c3)[2:]
     cap_list = [0.044, 0.066, 0.094, 0.200]
     cap_tot = 0
@@ -133,7 +204,41 @@ def index_to_c3(c3):
     return cap_tot
 
 
+def compute_capacity_values(capacity_1, capacity_2, connection_type):
+    """Compute the capacity values from the data table.
+
+    Parameters
+    ----------
+    capacity_1: ndarray
+    capacity_2: ndarray
+    connection_type: ndarray
+
+    Returns
+    -------
+    capacity_values: ndarray
+        List of capacity values.
+    """
+    capacity_values = []
+    for i in range(len(capacity_1)):
+        capacity_values.append(compute_capacity(capacity_1[i], capacity_2[i], 0, connection_type[i]))
+    return np.asarray(capacity_values)
+
+
 def compute_capacity(c1, c2, c3=0, serial=0):
+    """Compute the capacity values from the data table.
+
+    Parameters
+    ----------
+    c1
+    c2
+    c3
+    serial
+
+    Returns
+    -------
+    out: float
+        Capacity.
+    """
     if serial == 0:
         cbox1 = index_to_c1(int(c1)) + index_to_c2(int(c2))
     elif serial == 1:
@@ -145,65 +250,58 @@ def compute_capacity(c1, c2, c3=0, serial=0):
     
     if cbox2 == 0:
         return cbox1*1e-9
-    if cbox1 == 0:
+    elif cbox1 == 0:
         return cbox2*1e-9
     else:
         return add_inverse(cbox1 * 1e-9, cbox2 * 1e-9)
 
 
-def plot_capacity(frequency, c_par):
-    plt.plot(frequency, c_par, '*')
+def plot_main(capacity_values, theoretical_frequency, measured_frequency, optimized_values):
+    plt.plot(capacity_values, theoretical_frequency, 'o')
+    plt.plot(capacity_values, measured_frequency, 'v')
+    plt.plot(capacity_values, optimized_values, '*')
 
-    plt.xlabel('Frequency [au]')
-    plt.ylabel('Capacity [mF]')
+    plt.xlabel('Capacity [mF]')
+    plt.ylabel('Frequency [au]')
 
-    plt.show()
+    plt.xscale('log')
+    plt.yscale('log')
 
-
-def plot_capacities(frequency, c_par, c_ser):
-    plt.plot(frequency, c_par)
-    plt.plot(frequency, c_ser)
-
-    plt.legend(['Parallel calculation', 'Serial calculation'])
-    plt.xlabel('Frequency [au]')
-    plt.ylabel('Capacity [mF]')
+    plt.legend(['Theoretical frequency values', 'Measured frequency values', 'Optimized frequency values'],
+               loc='best')
 
     plt.show()
 
 
-def plot_frequencies(measured_frequency, theoretical_frequency):
-    plt.plot(measured_frequency, theoretical_frequency, '*')
+def find_optimized_equation():
 
-    plt.xlabel('Measured frequency [au]')
-    plt.ylabel('Theoretical frequency [au]')
-
-    plt.show()
-
-
-def main():
-
-    # liste = list(it.product(range(64), range(32), range(16)))
-
+    # Read data from file
     measured_frequency, capacity_1, capacity_2, connection_type = read_data_from_file('data/data.csv')
 
-    # c_par = add_inverse(np.asarray(capacity_1), np.asarray(capacity_2))
-    # c_ser = np.asarray(capacity_1) + np.asarray(capacity_2)
-    # plot_capacities(measured_frequency, c_par, c_ser)
+    # Compute capacity values
+    capacity_values = compute_capacity_values(capacity_1, capacity_2, connection_type)
 
-    capacity_values = []
-    for i in range(len(capacity_1)):
-        capacity_values.append(compute_capacity(capacity_1[i], capacity_2[i], 0, connection_type[i]))
+    # Compute theoretical frequency
+    theoretical_frequency = compute_eigen_frequency(np.asarray(capacity_values))
 
-    # plot_capacity(measured_frequency, capacity_values)
-    #
-    # zeros = np.zeros(len(capacity_1))
-    # theoretical_frequency = eigen_frequency(np.asarray(capacity_values), zeros)
+    # Optimize the theoretical equation
+    params, params_covariance = optimize.curve_fit(compute_eigen_frequency, capacity_values, measured_frequency,
+                                                   p0=[1, 1/2, 0, 0])
+    optimized_values = compute_eigen_frequency(capacity_values, *params)
 
-    # plot_frequencies(measured_frequency, theoretical_frequency)
+    # Plot the result
+    plot_main(capacity_values, theoretical_frequency, measured_frequency, optimized_values)
 
-    result = parasitic_capacity_calculation(capacity_values, measured_frequency, connection_type='parallel')
-    plot_capacity(measured_frequency, result)
+    return params
+
+
+def main(value):
+    # computed_params = find_optimized_equation()
+    computed_params = [1.64910419e+00,  4.72453831e-01,  1.42870768e-10, -1.14410061e+04]
+    result = compute_capacity_for_given_eigenfrequency(value, computed_params)
+    print(result)
 
 
 if __name__ == '__main__':
-    main()
+    main(0.1)
+    # find_optimized_equation()
