@@ -21,6 +21,8 @@ def main(eigenfrequency_value):
     print(messages[0])
     print(messages[1])
 
+    return numerical_values, messages
+
 
 if __name__ == '__main__':
     frequency_value = 200000

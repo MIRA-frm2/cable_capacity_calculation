@@ -135,9 +135,6 @@ def compute_index(capacity):
 
 
 def main():
-    # print(index_c1.index_to_capacity(10))
-    # print(index_c1.capacity_to_index(65))
-
     compute_index(324.76)
 
 
