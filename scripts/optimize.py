@@ -8,48 +8,14 @@
 
 """Computation script for capacities and Eigenfrequencies."""
 
-import csv
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import optimize
 
 from scripts.index_capacities import compute_capacity
+from scripts.utils import read_data_from_file
 
-inductance = 2.15e-5
-
-
-def read_data_from_file(file_name):
-    """Read data from file.
-
-    Parameters
-    ----------
-    file_name: str
-        Name of the file to be read from.
-    """
-    _frequency = list()
-    _capacity_1 = list()
-    _capacity_2 = list()
-    connection_type = list()
-
-    with open(file_name) as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        line_count = 0
-        for row in csv_reader:
-            if row[1] and row[2] and row[3]:
-                if line_count == 0:
-                    # print(f'Column names are {", ".join(row)}')
-                    line_count += 1
-                else:
-                    try:
-                        _frequency.append(float(row[0]))
-                        _capacity_1.append(float(row[1]))
-                        _capacity_2.append(float(row[2]))
-
-                        connection_type.append(int(row[3]))
-                    except IndexError:
-                        print("wtf")
-
-        return np.asarray(_frequency), np.asarray(_capacity_1), np.asarray(_capacity_2), np.asarray(connection_type)
+inductance = 22.45e-6  # [H]
 
 
 def compute_eigen_frequency(circuit_capacity, a=1, n=1 / 2, b=0, d=0):
@@ -204,12 +170,11 @@ def main(value):
         Eigenfrequency value.
 
     """
-    # computed_params = find_optimized_equation()
-    computed_params = [1.64910419e+00,  4.72453831e-01,  1.42870768e-10, -1.14410061e+04]
+    computed_params = find_optimized_equation()
     result = compute_capacity_for_given_eigenfrequency(value, computed_params)
     print(result)
 
 
 if __name__ == '__main__':
-    main(0.1)
-    # find_optimized_equation()
+    # main(0.1)
+    print(find_optimized_equation())

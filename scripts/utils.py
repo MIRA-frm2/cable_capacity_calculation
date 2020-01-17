@@ -8,6 +8,9 @@
 
 """Utilities and helper functions."""
 
+import csv
+import numpy as np
+
 
 def add_inverse(a, b):
     """Adds two values as a parallel connection.
@@ -65,3 +68,37 @@ def convert_binary_to_decimal(binary_number):
         decimal += + int(bit) * pow(2, n - i)
         i += 1
     return decimal
+
+
+def read_data_from_file(file_name):
+    """Read data from file.
+
+    Parameters
+    ----------
+    file_name: str
+        Name of the file to be read from.
+    """
+    _frequency = list()
+    _capacity_1 = list()
+    _capacity_2 = list()
+    connection_type = list()
+
+    with open(file_name) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        for row in csv_reader:
+            if row[1] and row[2] and row[3]:
+                if line_count == 0:
+                    # print(f'Column names are {", ".join(row)}')
+                    line_count += 1
+                else:
+                    try:
+                        _frequency.append(float(row[0]))
+                        _capacity_1.append(float(row[1]))
+                        _capacity_2.append(float(row[2]))
+
+                        connection_type.append(int(row[3]))
+                    except IndexError:
+                        print("wtf")
+
+        return np.asarray(_frequency), np.asarray(_capacity_1), np.asarray(_capacity_2), np.asarray(connection_type)
