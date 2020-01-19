@@ -59,11 +59,11 @@ def compute_capacity_for_given_eigenfrequency(eigenfrequency, params):
         Computed capacity needed for the given eigenfrequency.
     """
     a, n, b, d = params
-    capacity = ((eigenfrequency - d) * (2 * np.pi * np.sqrt(inductance)) / a) ** n - b
+    capacity = ((eigenfrequency - d) * (2 * np.pi * np.sqrt(inductance)) / a) ** (-1/n) - b
     return capacity
 
 
-def parasitic_capacity_calculation(capacity, effective_frequency, connection_type='serial'):
+def parasitic_capacity_calculation(capacity, effective_frequency, connection_type='parallel'):
     """Compute the parasitic capacity assuming that it contributes either as a serial or parallel connection.
 
     Parameters

@@ -11,7 +11,7 @@
 from copy import deepcopy
 import itertools
 
-from scripts.utils import add_inverse, convert_decimal_to_binary
+from scripts.utils import add_inverse, convert_decimal_to_binary, convert_binary_to_decimal
 
 
 class IndexCapacityTransormation:
@@ -51,7 +51,7 @@ class IndexCapacityTransormation:
 
         return capacity
 
-    def capacity_to_index(self, capacity, return_remainder=False):
+    def capacity_to_index(self, capacity, return_remainder=True, decimal='True'):
         """Convert capacity to an index value.
 
         Parameters
@@ -61,7 +61,9 @@ class IndexCapacityTransormation:
         return_remainder: bool
             Flag indicating whether to return the remainder capacity or not.
             Defaults to False.
-
+        decimal: bool
+            Flag indicating whether to return the index as decimal or binary.
+            Defaults to True.
 
         Returns
         -------
@@ -73,6 +75,7 @@ class IndexCapacityTransormation:
         capacity_list = list(deepcopy(self.capacity_list))
         capacity_list.reverse()
         index = ''
+        capacity_list = [i*10**-9 for i in capacity_list[:]]
 
         for capacity_value in capacity_list:
             if capacity >= capacity_value:
@@ -82,10 +85,13 @@ class IndexCapacityTransormation:
             else:
                 index = '0' + index
 
+        if decimal:
+            index = convert_binary_to_decimal(index)
+
         if return_remainder:
-            return index
-        else:
             return index, capacity
+        else:
+            return index
 
     def compute_all_possible_combinations(self):
         pass
@@ -172,6 +178,7 @@ def compute_index(capacity):
     val_index_c2, remainder_capacity = index_c2.capacity_to_index(remainder_capacity)
     val_index_c3, remainder_capacity = index_c3.capacity_to_index(remainder_capacity)
 
+
     indexes_message = f'The indexes are as follows:\n' \
                       f'From the C1box: {val_index_c1}\n' \
                       f'From the C2box: {val_index_c2}\n' \
@@ -182,9 +189,9 @@ def compute_index(capacity):
 
 
 def main():
-    # compute_index(324.76)
-    # print(compute_all_possible_capacities())
-    print(index_c1.get_all_possible_index_combinations())
+
+    indexes, messages = compute_index(324.76)
+    print(indexes)
 
 
 if __name__ == '__main__':
