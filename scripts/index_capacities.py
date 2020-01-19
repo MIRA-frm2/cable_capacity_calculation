@@ -9,6 +9,7 @@
 """Conversion between index value and capacities."""
 
 from copy import deepcopy
+import itertools
 
 from scripts.utils import add_inverse, convert_decimal_to_binary
 
@@ -24,6 +25,11 @@ class IndexCapacityTransormation:
             Tuple of available capacities, ordered from smallest to largest.
         """
         self.capacity_list = capacity_list
+
+        self.capacity_dict = dict()
+
+        for i in range(len(capacity_list)):
+            self.capacity_dict[i] = capacity_list[i]
 
     def index_to_capacity(self, index):
         """Convert the index to a capacity value.
@@ -81,6 +87,27 @@ class IndexCapacityTransormation:
         else:
             return index, capacity
 
+    def compute_all_possible_combinations(self):
+        pass
+
+    def get_all_possible_index_combinations(self):
+        permutation_list = list()
+        possible_values = (['0', '0', '0', '0', '0', '0'],
+                           ['0', '0', '0', '0', '0', '1'],
+                           ['0', '0', '0', '0', '1', '1'],
+                           ['0', '0', '0', '1', '1', '1'],
+                           ['0', '0', '1', '1', '1', '1'],
+                           ['0', '1', '1', '1', '1', '1'],
+                           ['1', '1', '1', '1', '1', '1'],
+                           )
+        for values in possible_values:
+            perm = itertools.permutations(values)
+            for val in perm:
+                if val not in permutation_list:
+                    permutation_list.append(val)
+
+        return permutation_list
+
 
 index_c1 = IndexCapacityTransormation(capacity_list=[20, 44, 94, 200, 440, 940])
 index_c2 = IndexCapacityTransormation(capacity_list=[0.44, 0.94, 2, 4.4, 9.40])
@@ -119,6 +146,26 @@ def compute_capacity(c1, c2, c3=0, serial=0):
         return add_inverse(cbox1 * 1e-9, cbox2 * 1e-9)
 
 
+def compute_total_capacity(c1, c2, c3, serial=0):
+    if serial == 0:
+        c_total = add_inverse(c1 + c2, c3)
+    else:
+        c_total = add_inverse(add_inverse(c1, c2), c3)
+    return c_total
+
+
+def compute_all_possible_capacities():
+    capacity_values = list()
+    for val_c1 in index_c1.capacity_list:
+        for val_c2 in index_c2.capacity_list:
+            for val_c3 in index_c3.capacity_list:
+                for serial in [0, 1]:
+                    capacity_values.append(compute_total_capacity(val_c1, val_c2, val_c3, serial=serial))
+
+    return capacity_values
+
+
+
 def compute_index(capacity):
 
     val_index_c1, remainder_capacity = index_c1.capacity_to_index(capacity)
@@ -135,7 +182,9 @@ def compute_index(capacity):
 
 
 def main():
-    compute_index(324.76)
+    # compute_index(324.76)
+    # print(compute_all_possible_capacities())
+    print(index_c1.get_all_possible_index_combinations())
 
 
 if __name__ == '__main__':
