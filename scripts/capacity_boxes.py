@@ -15,7 +15,7 @@ from scripts.parameters import capacity_box_1_list, capacity_box_2_list, capacit
 from scripts.utils import convert_decimal_to_binary, convert_binary_to_decimal
 
 
-class IndexCapacityTransormation:
+class CapacityBoxes:
     """Class that converts between capacity boxes index and capacities."""
 
     def __init__(self, capacity_list):
@@ -109,6 +109,6 @@ class IndexCapacityTransormation:
 
 
 # Define the capacity boxes.
-capacity_box_1 = IndexCapacityTransormation(capacity_list=capacity_box_1_list)
-capacity_box_2 = IndexCapacityTransormation(capacity_list=capacity_box_2_list)
-capacity_box_3 = IndexCapacityTransormation(capacity_list=capacity_box_3_list)
+capacity_box_1 = CapacityBoxes(capacity_list=capacity_box_1_list)
+capacity_box_2 = CapacityBoxes(capacity_list=capacity_box_2_list)
+capacity_box_3 = CapacityBoxes(capacity_list=capacity_box_3_list)

@@ -21,7 +21,7 @@ The theoretical relation between the eigenfrequency of a LC circuit and the capa
 
 This relation is further generalized as:
 
-<img src="https://render.githubusercontent.com/render/math?math=\dfrac{1}{\sqrt{C}} = C^{-\frac{1}{2}} \approx a ( C + b)^{-n} + d">
+<img src="https://render.githubusercontent.com/render/math?math=\dfrac{1}{\sqrt{C}} = C^{-\frac{1}{2}} \approx a ( C \perp b)^{-n} \perp d">
 
 Based on experimentally measured values from [frequency table](data/freq_table_editted.ods), the values for the free 
 parameters a, b, d are optimized to match the measured points and can be found in the [parameters file](scripts/parameters.py).

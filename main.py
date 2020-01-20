@@ -8,8 +8,8 @@
 
 """Conversion from eigenfrequency to indexes of the capacity boxes."""
 
-from scripts.compute_capacities import compute_index
-from scripts.optimize import compute_capacity_for_given_eigenfrequency
+from scripts.analysis.find_best_capacity_index import compute_index
+from scripts.compute_values.eigenfrequency_capacity import compute_capacity_for_given_eigenfrequency
 from scripts.parameters import computed_params
 from scripts.utils import transform_frequency
 
