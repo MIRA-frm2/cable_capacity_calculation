@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import optimize
 
-from scripts.index_capacities import compute_capacity
+from scripts.compute_capacities import compute_capacity
 from scripts.utils import read_data_from_file
 
 inductance = 22.45e-6  # [H]

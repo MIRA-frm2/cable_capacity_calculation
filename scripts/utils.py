@@ -31,6 +31,27 @@ def add_inverse(a, b):
         return 0
 
 
+def transform_frequency(eigenfrequency_value, prefactor=3.8/143000):
+    """Transform eigenfrequency to match the Larmor precesion.
+
+    # ToDo: need more info on this
+
+    Parameters
+    ----------
+    eigenfrequency_value: float
+        Eigenfrequency to be converted.
+    prefactor: float, optional
+        #Todo: Draft
+        Conversion factor that matches the data.
+        Defaults to 3.8/143000
+
+    Returns
+    -------
+    out: float
+    """
+    return prefactor * eigenfrequency_value
+
+
 def convert_decimal_to_binary(number):
     """
 

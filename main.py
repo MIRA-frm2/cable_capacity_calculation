@@ -8,9 +8,10 @@
 
 """Conversion from eigenfrequency to indexes of the capacity boxes."""
 
+from scripts.compute_capacities import compute_index
 from scripts.optimize import compute_capacity_for_given_eigenfrequency
-from scripts.index_capacities import compute_index
 from scripts.parameters import computed_params
+from scripts.utils import transform_frequency
 
 
 def main(eigenfrequency_value):
@@ -21,7 +22,7 @@ def main(eigenfrequency_value):
 
     print(message)
 
-    hrf = 3.8/143000*eigenfrequency_value
+    hrf = transform_frequency(eigenfrequency_value)
     print(f'hrf = {str(hrf)}')
 
     return numerical_values, message

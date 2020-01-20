@@ -6,6 +6,12 @@
 # This is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
 
-"""File storing the parameters from the optimization."""
+"""File storing the parameters from the computing the capacity indexes."""
 
+# These values are obtained by running the optimization script.
 computed_params = [1.68514381e+00, 4.72453838e-01, 1.42870779e-10, -1.14410010e+04]
+
+# These values are taken from the datasheet for the capacity boxes.
+capacity_box_1_list = [20, 44, 94, 200, 440, 940]
+capacity_box_2_list = [0.44, 0.94, 2, 4.4, 9.40]
+capacity_box_3_list = [0.044, 0.066, 0.094, 0.200]
