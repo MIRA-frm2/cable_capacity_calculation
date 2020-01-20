@@ -9,9 +9,9 @@
 """Conversion between index value and capacities."""
 
 from copy import deepcopy
-import itertools
 
-from scripts.utils import add_inverse, convert_decimal_to_binary, convert_binary_to_decimal
+from scripts.utils import add_inverse, convert_decimal_to_binary, convert_binary_to_decimal, \
+    read_capacities_data_from_file, save_capacities_data_to_file
 
 
 class IndexCapacityTransormation:
@@ -93,26 +93,31 @@ class IndexCapacityTransormation:
         else:
             return index
 
-    def compute_all_possible_combinations(self):
-        pass
+    @property
+    def max_index(self):
+        return int(2 ** len(self.capacity_list) - 1)
 
-    def get_all_possible_index_combinations(self):
-        permutation_list = list()
-        possible_values = (['0', '0', '0', '0', '0', '0'],
-                           ['0', '0', '0', '0', '0', '1'],
-                           ['0', '0', '0', '0', '1', '1'],
-                           ['0', '0', '0', '1', '1', '1'],
-                           ['0', '0', '1', '1', '1', '1'],
-                           ['0', '1', '1', '1', '1', '1'],
-                           ['1', '1', '1', '1', '1', '1'],
-                           )
-        for values in possible_values:
-            perm = itertools.permutations(values)
-            for val in perm:
-                if val not in permutation_list:
-                    permutation_list.append(val)
+    # def compute_all_possible_combinations(self):
+    #     for index in range(int(2 ** len(self.capacity_list))):
+    #         print(self.index_to_capacity(index))
 
-        return permutation_list
+    # def get_all_possible_index_combinations(self):
+    #     permutation_list = list()
+    #     possible_values = (['0', '0', '0', '0', '0', '0'],
+    #                        ['0', '0', '0', '0', '0', '1'],
+    #                        ['0', '0', '0', '0', '1', '1'],
+    #                        ['0', '0', '0', '1', '1', '1'],
+    #                        ['0', '0', '1', '1', '1', '1'],
+    #                        ['0', '1', '1', '1', '1', '1'],
+    #                        ['1', '1', '1', '1', '1', '1'],
+    #                        )
+    #     for values in possible_values:
+    #         perm = itertools.permutations(values)
+    #         for val in perm:
+    #             if val not in permutation_list:
+    #                 permutation_list.append(val)
+    #
+    #     return permutation_list
 
 
 index_c1 = IndexCapacityTransormation(capacity_list=[20, 44, 94, 200, 440, 940])
@@ -161,37 +166,64 @@ def compute_total_capacity(c1, c2, c3, serial=0):
 
 
 def compute_all_possible_capacities():
-    capacity_values = list()
-    for val_c1 in index_c1.capacity_list:
-        for val_c2 in index_c2.capacity_list:
-            for val_c3 in index_c3.capacity_list:
+
+    data = dict()
+
+    for val_c1 in range(index_c1.max_index):
+        for val_c2 in range(index_c2.max_index):
+            for val_c3 in range(index_c3.max_index):
                 for serial in [0, 1]:
-                    capacity_values.append(compute_total_capacity(val_c1, val_c2, val_c3, serial=serial))
+                    data[compute_capacity(val_c1, val_c2, val_c3, serial=serial)] = (val_c1, val_c2, val_c3, serial)
 
-    return capacity_values
-
-
-
-def compute_index(capacity):
-
-    val_index_c1, remainder_capacity = index_c1.capacity_to_index(capacity)
-    val_index_c2, remainder_capacity = index_c2.capacity_to_index(remainder_capacity)
-    val_index_c3, remainder_capacity = index_c3.capacity_to_index(remainder_capacity)
+    save_capacities_data_to_file(data, '../data/capacities.csv')
 
 
-    indexes_message = f'The indexes are as follows:\n' \
-                      f'From the C1box: {val_index_c1}\n' \
-                      f'From the C2box: {val_index_c2}\n' \
-                      f'From the C3box: {val_index_c3}'
-    capacity_error_message = f'The capacity error is:{remainder_capacity}'
+def find_best_capacity_value(desired_capacity):
+    values = read_capacities_data_from_file('data/capacities.csv')
 
-    return [val_index_c1, val_index_c2, val_index_c3, remainder_capacity], [indexes_message, capacity_error_message]
+    best_capacity = 0
+    error = desired_capacity
+
+    for i in range(len(values[0])):
+        value = values[0][i]
+        new_error = abs(value - desired_capacity)
+
+        if new_error < error:
+            best_capacity = value
+            error = new_error
+
+            connection_data = values[1][i], values[2][i], values[3][i], values[4][i]
+
+    return best_capacity, error, connection_data
+
+
+def compute_index(capacity, from_data_table=True):
+
+    if from_data_table:
+        best_capacity, remainder_capacity, connection_data = find_best_capacity_value(capacity)
+        val_index_c1, val_index_c2, val_index_c3, connection_type = connection_data
+    else:
+        val_index_c1, remainder_capacity = index_c1.capacity_to_index(capacity)
+        val_index_c2, remainder_capacity = index_c2.capacity_to_index(remainder_capacity)
+        val_index_c3, remainder_capacity = index_c3.capacity_to_index(remainder_capacity)
+        connection_type = 1
+
+    message = f'The closest possible capacity value is: {best_capacity}\n' \
+              f'With the capacity error of: {remainder_capacity}\n' \
+              f'\nThe indexes are as follows:\n' \
+              f'From the C1box: {val_index_c1}\n' \
+              f'From the C2box: {val_index_c2}\n' \
+              f'From the C3box: {val_index_c3}\n' \
+              f'Connected in serial: {connection_type}'
+
+    return [val_index_c1, val_index_c2, val_index_c3, remainder_capacity], message
 
 
 def main():
 
-    indexes, messages = compute_index(324.76)
-    print(indexes)
+    # indexes, messages = compute_index(324.76)
+    # print(indexes)
+    print(find_best_capacity_value(5.7391304347826082e-11))
 
 
 if __name__ == '__main__':

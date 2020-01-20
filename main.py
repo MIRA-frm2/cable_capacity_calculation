@@ -16,15 +16,15 @@ from scripts.parameters import computed_params
 def main(eigenfrequency_value):
 
     capacity = compute_capacity_for_given_eigenfrequency(eigenfrequency_value, computed_params)
-    print(capacity)
-    numerical_values, messages = compute_index(capacity)
+    print(f'For the given eigenfrequency of {eigenfrequency_value}, the desired capacity is: {capacity}\n')
+    numerical_values, message = compute_index(capacity)
 
-    print(messages[0])
-    print(messages[1])
+    print(message)
+
     hrf = 3.8/143000*eigenfrequency_value
-    print('hrf = '+str(hrf))
+    print(f'hrf = {str(hrf)}')
 
-    return numerical_values, messages
+    return numerical_values, message
 
 
 if __name__ == '__main__':
