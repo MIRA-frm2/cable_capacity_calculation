@@ -10,7 +10,7 @@
 
 import numpy as np
 
-from scripts.parameters import inductance
+from scripts.parameters import inductance, computed_params
 
 
 def compute_eigen_frequency(circuit_capacity, a=1, n=1 / 2, b=0, d=0):
@@ -38,7 +38,7 @@ def compute_eigen_frequency(circuit_capacity, a=1, n=1 / 2, b=0, d=0):
     return prefactor * a * (np.asarray(circuit_capacity + b) ** (-n)) + d
 
 
-def compute_capacity_for_given_eigenfrequency(eigenfrequency, params):
+def compute_capacity_for_given_eigenfrequency(eigenfrequency, params=computed_params):
     """
 
     Parameters

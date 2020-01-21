@@ -17,3 +17,10 @@ capacity_box_2_list = [0.44, 0.94, 2, 4.4, 9.40]
 capacity_box_3_list = [0.044, 0.066, 0.094, 0.200]
 
 inductance = 22.45e-6  # [H]
+mass_neutron = 1.674927471e-27  # [kg]
+h_planck_constant = 6.62607004e-34  # [m2 kg / s]
+wavelength = 4.3e-10  # [m]
+length = 193  # [?]
+
+# Number of digits after comma to be rounded after
+n_digits = 0

@@ -13,13 +13,14 @@ from scripts.capacity_boxes import capacity_box_1, capacity_box_2, capacity_box_
 from scripts.utils import read_capacities_data_from_file
 
 
-def find_best_capacity_value(desired_capacity):
+def find_best_capacity_value(desired_capacity, data_file='data/capacities.csv'):
     """Return the closest capacity to the desired one from the possible capacity combinations.
 
     Parameters
     ----------
     desired_capacity: float
         The desired capacity value needed for the circuit.
+    data_file: str
 
     Returns
     -------
@@ -29,7 +30,11 @@ def find_best_capacity_value(desired_capacity):
     connection_data: tuple
         Tuple containing the indexes for the capacity boxes and the connection type (serial/parallel).
     """
-    values = read_capacities_data_from_file('data/capacities.csv')
+    try:
+        values = read_capacities_data_from_file(data_file)
+    except FileNotFoundError:
+        data_file = f'../../{data_file}'
+        values = read_capacities_data_from_file(data_file)
 
     best_capacity = 0
     error = desired_capacity
@@ -99,7 +104,7 @@ def compute_index(capacity, from_data_table=True):
               f'From the C3box: {val_index_c3}\n' \
               f'Connected in serial: {connection_type}'
 
-    return [val_index_c1, val_index_c2, val_index_c3, remainder_capacity], message
+    return [val_index_c1, val_index_c2, val_index_c3, connection_type, remainder_capacity], message
 
 
 def main():
