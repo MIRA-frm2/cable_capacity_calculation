@@ -79,6 +79,9 @@ def compute_capacity(c1, c2, c3=0, serial=0):
     -------
     out: float
         Capacity.
+
+    >>> compute_capacity(5, 4, 0, 1)
+    1.9655172413793106e-09
     """
     if serial == 0:
         cbox1 = capacity_box_1.index_to_capacity(int(c1)) + capacity_box_2.index_to_capacity(int(c2))

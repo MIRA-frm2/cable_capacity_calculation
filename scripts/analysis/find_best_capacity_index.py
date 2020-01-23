@@ -100,9 +100,9 @@ def compute_index(capacity, from_data_table=True):
               f'With the capacity error of: {remainder_capacity}\n' \
               f'\nThe indexes are as follows:\n' \
               f'From the C1box: {val_index_c1}\n' \
+              f'Connected in serial: {connection_type}\n' \
               f'From the C2box: {val_index_c2}\n' \
-              f'From the C3box: {val_index_c3}\n' \
-              f'Connected in serial: {connection_type}'
+              f'From the C3box: {val_index_c3}\n'
 
     return [val_index_c1, val_index_c2, val_index_c3, connection_type, remainder_capacity], message
 

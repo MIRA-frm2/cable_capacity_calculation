@@ -33,6 +33,12 @@ def compute_eigen_frequency(circuit_capacity, a=1, n=1 / 2, b=0, d=0):
     -------
     out: float, ndarray
         Eigenfrequency of the circuit taking into account the cable capacity.
+
+
+    >>> compute_eigen_frequency(1.8181818181818182e-09)
+    787758.8732301581
+    >>> compute_eigen_frequency(1.9655172413793106e-09)
+    757658.5527526588
     """
     prefactor = 1 / (2 * np.pi * np.sqrt(inductance))
     return prefactor * a * (np.asarray(circuit_capacity + b) ** (-n)) + d
@@ -52,6 +58,7 @@ def compute_capacity_for_given_eigenfrequency(eigenfrequency, params=computed_pa
     -------
     capacity: float
         Computed capacity needed for the given eigenfrequency.
+
     """
     a, n, b, d = params
     capacity = ((eigenfrequency - d) * (2 * np.pi * np.sqrt(inductance)) / a) ** (-1/n) - b
